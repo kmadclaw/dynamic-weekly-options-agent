@@ -12,7 +12,7 @@ Live page: https://kmadclaw.github.io/dynamic-weekly-options-agent/
 - Alpaca data/execution sources
 - Entry filters for weekly contracts under $1
 - Risk controls, autonomy model, and status rules
-- Autonomous profit booking and stop/risk sell-to-close rules
+- Profit/risk alert rules with auto-exit currently disabled
 - Exact-contract wash-sale guard
 
 ## Notes
@@ -22,4 +22,4 @@ This page is an operational overview only. It does not include API keys, account
 
 ## Current autonomy model
 
-As of 2026-08-14, Krish authorized the agent to sell without asking first when the existing strategy rules say to book profit or cut risk. Existing guardrails remain unchanged: limit orders only, one active option position/order, hard buy-side ask cap <= $1.00, no new entries during the first 30 minutes, spread/liquidity/delta filters, exact-contract re-entry block after closes, action checks at an effective 30-second cadence, routine status every 5 minutes, and additional notes only when an action is taken or an action order remains open.
+As of 2026-08-14 latest update, auto sell-to-close is disabled for now because the simple auto-exit rule needs improvement. The agent still checks at an effective 30-second cadence and sends routine status every 5 minutes, but profit/target and risk/stop triggers should emit alerts/status only rather than submit exit orders. Existing entry guardrails remain unchanged: limit orders only, one active option position/order, hard buy-side ask cap <= $1.00, no new entries during the first 30 minutes, spread/liquidity/delta filters, and exact-contract re-entry block after closes.
