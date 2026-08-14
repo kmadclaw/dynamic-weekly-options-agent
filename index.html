@@ -92,7 +92,7 @@
           <li>If no active position/order: agent may enter autonomously.</li>
           <li>If a held option hits profit/target or stop/risk: agent may sell-to-close autonomously.</li>
           <li>If any active position/order exists: no additional entry is placed.</li>
-          <li>Executor stays silent unless it submits/fills/closes or emits a status alert.</li>
+          <li>Action checker runs at an effective 30-second cadence and stays silent unless it submits/fills/closes; routine status comes separately every 5 minutes.</li>
         </ul>
       </div>
     </div>
@@ -169,7 +169,7 @@
         <li><b>Entries:</b> autonomous only when broker has no open option position/order and the selected contract passes all gates.</li>
         <li><b>Exits:</b> autonomous sell-to-close is authorized for profit booking and risk/stop exits; Krish does not need to approve each sale.</li>
         <li><b>Order type:</b> options use limit orders only. Sell limits are placed near the live bid/mark for realistic protective fills.</li>
-        <li><b>Status:</b> every submitted, filled, closed, or risk/profit action is emitted back to Krish; no-trigger runs stay silent.</li>
+        <li><b>Status:</b> routine position status is sent every 5 minutes; additional notes are sent only when an order/action is taken or an action order remains open.</li>
         <li><b>Guardrails unchanged:</b> one-position cap, max $1 ask, spread/liquidity/delta filters, exact-contract wash guard, and no new entries in the first 30 minutes.</li>
       </ul>
     </section>
@@ -204,7 +204,7 @@
         <h2>Active automation</h2>
         <ul>
           <li><b>Daily dynamic weekly option setup refresh:</b> builds top-10 setup list after 10:00 ET.</li>
-          <li><b>Dynamic weekly option setup executor:</b> checks every minute, selects live contract at trigger time, enters only if all gates pass, and now exits automatically on profit/stop rules.</li>
+          <li><b>Dynamic weekly option setup executor:</b> effective 30-second action cadence via locked wrapper; selects live contract at trigger time, enters only if all gates pass, and exits automatically on profit/stop rules.</li>
           <li><b>5m open position updates:</b> posts concise status only while the market is open.</li>
           <li><b>State directory:</b> <code>/opt/data/trading-agents/dynamic-weekly-options</code></li>
         </ul>

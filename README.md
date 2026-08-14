@@ -22,4 +22,4 @@ This page is an operational overview only. It does not include API keys, account
 
 ## Current autonomy model
 
-As of 2026-08-14, Krish authorized the agent to sell without asking first when the existing strategy rules say to book profit or cut risk. Existing guardrails remain unchanged: limit orders only, one active option position/order, hard buy-side ask cap <= $1.00, no new entries during the first 30 minutes, spread/liquidity/delta filters, exact-contract re-entry block after closes, and status updates for actions taken.
+As of 2026-08-14, Krish authorized the agent to sell without asking first when the existing strategy rules say to book profit or cut risk. Existing guardrails remain unchanged: limit orders only, one active option position/order, hard buy-side ask cap <= $1.00, no new entries during the first 30 minutes, spread/liquidity/delta filters, exact-contract re-entry block after closes, action checks at an effective 30-second cadence, routine status every 5 minutes, and additional notes only when an action is taken or an action order remains open.
