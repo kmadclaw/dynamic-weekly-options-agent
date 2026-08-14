@@ -51,7 +51,7 @@
     li { margin: 6px 0; }
     .pillrow { display: flex; flex-wrap: wrap; gap: 8px; }
     .pill { border: 1px solid var(--line); background: rgba(255,255,255,.055); padding: 7px 10px; border-radius: 999px; font-size: 13px; color: #d8e2f3; }
-    .flow { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; counter-reset: step; }
+    .flow { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; counter-reset: step; }
     .step { position: relative; padding: 16px; background: rgba(255,255,255,.045); border: 1px solid var(--line); border-radius: 18px; min-height: 142px; }
     .step:before { counter-increment: step; content: counter(step); display: inline-grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: rgba(88,240,167,.16); color: var(--green); font-weight: 800; margin-bottom: 10px; }
     .step b { display: block; margin-bottom: 6px; }
@@ -76,22 +76,23 @@
   <header class="wrap">
     <div class="eyebrow">Krish's trading-agent operating brief</div>
     <h1>Dynamic Weekly Options Agent</h1>
-    <p class="lead">A small-account, risk-gated weekly options agent that scans liquid names after the first 30 minutes, watches underlying setups, dynamically selects the best live option contract under $1, and uses Alpaca for market data and execution.</p>
+    <p class="lead">A small-account, risk-gated weekly options agent that scans liquid names after the first 30 minutes, watches underlying setups, dynamically selects the best live option contract under $1, and now manages exits autonomously for profit booking and risk control using Alpaca.</p>
     <div class="hero-grid">
       <div class="card">
         <h2>Strategy in one sentence</h2>
-        <p>Every trading day after <b>10:00 AM ET</b>, scan a liquid 68-symbol universe, rank the top directional setups, wait for the underlying trigger, then buy one qualifying weekly option contract with <b>ask ≤ $1.00</b> using a limit order.</p>
+        <p>Every trading day after <b>10:00 AM ET</b>, scan a liquid 68-symbol universe, rank the top directional setups, wait for the underlying trigger, buy one qualifying weekly option contract with <b>ask ≤ $1.00</b>, then autonomously sell-to-close when profit or risk rules trigger.</p>
         <div class="pillrow" style="margin-top:14px">
-          <span class="pill">Buy-side only</span><span class="pill">Max 1 contract</span><span class="pill">No first 30 min</span><span class="pill">Limit orders only</span><span class="pill">No auto-sell yet</span><span class="pill">Exact-contract wash guard</span>
+          <span class="pill">Autonomous entries</span><span class="pill">Autonomous exits</span><span class="pill">Max 1 contract</span><span class="pill">No first 30 min</span><span class="pill">Limit orders only</span><span class="pill">Exact-contract wash guard</span>
         </div>
       </div>
       <div class="card good">
         <h2>Current live rules</h2>
         <ul>
-          <li>No trades before 10:00 AM ET.</li>
+          <li>No new entries before 10:00 AM ET.</li>
           <li>If no active position/order: agent may enter autonomously.</li>
-          <li>If any active position/order exists: approval required.</li>
-          <li>Executor stays silent unless it submits/fills or emits risk/profit/approval alerts.</li>
+          <li>If a held option hits profit/target or stop/risk: agent may sell-to-close autonomously.</li>
+          <li>If any active position/order exists: no additional entry is placed.</li>
+          <li>Executor stays silent unless it submits/fills/closes or emits a status alert.</li>
         </ul>
       </div>
     </div>
@@ -113,6 +114,7 @@
         <div class="step"><b>Rank</b><span>Build top 10 BUY/SELL setups from trend, momentum, RSI, DMI/ADX, Bollinger, and levels.</span></div>
         <div class="step"><b>Trigger</b><span>Watch underlying price zones; do not pre-commit to one fixed option contract.</span></div>
         <div class="step"><b>Select</b><span>At trigger time, pull live option chain and choose the best weekly contract under $1.</span></div>
+        <div class="step"><b>Manage</b><span>Once filled, monitor option P/L and underlying target/stop; book profit or cut risk automatically with limit sell-to-close orders.</span></div>
       </div>
     </section>
 
@@ -150,19 +152,32 @@
       <div class="card danger">
         <h2>Risk controls</h2>
         <ul>
-          <li>Buy-to-open only: theoretical max loss is premium paid.</li>
+          <li>Buy-to-open entries keep theoretical max loss to premium paid.</li>
           <li>Hard max debit: <b>$100</b> per 1-lot contract, because ask ≤ $1.00.</li>
-          <li>Profit alert around +45–50% or underlying target hit.</li>
-          <li>Loss/risk alert around -35% or underlying invalidation/EMA stop hit.</li>
-          <li>No automatic sell yet; exits are alert-driven unless auto-exit rules are later approved.</li>
+          <li>Profit booking: sell-to-close around +45–50% or when the underlying target hits.</li>
+          <li>Risk exit: sell-to-close around -35% or when underlying invalidation/EMA stop hits.</li>
+          <li>Autonomous exits are now approved by standing rule; still <b>limit orders only</b>, never market orders.</li>
+          <li>At stop boundaries, Alpaca position mark/P&L is used as a fallback when quote mid is stale or wide.</li>
         </ul>
       </div>
     </section>
 
+
+    <section class="card good" style="margin-top:18px">
+      <h2>Autonomy model as of Aug 14, 2026</h2>
+      <ul>
+        <li><b>Entries:</b> autonomous only when broker has no open option position/order and the selected contract passes all gates.</li>
+        <li><b>Exits:</b> autonomous sell-to-close is authorized for profit booking and risk/stop exits; Krish does not need to approve each sale.</li>
+        <li><b>Order type:</b> options use limit orders only. Sell limits are placed near the live bid/mark for realistic protective fills.</li>
+        <li><b>Status:</b> every submitted, filled, closed, or risk/profit action is emitted back to Krish; no-trigger runs stay silent.</li>
+        <li><b>Guardrails unchanged:</b> one-position cap, max $1 ask, spread/liquidity/delta filters, exact-contract wash guard, and no new entries in the first 30 minutes.</li>
+      </ul>
+    </section>
+
     <section class="card warn">
       <h2>Wash-sale guard</h2>
-      <p>The current practical guard follows Krish's preference and trading experience: after a loss/risk alert, block re-entry into the <b>exact same option contract</b> for 31 days.</p>
-      <p class="small">Different strike, expiry, or option type on the same underlying remains eligible if it passes the setup and liquidity filters. This is an operational trading guard, not tax advice.</p>
+      <p>The current practical guard follows Krish's preference and trading experience: after a loss/risk exit, block re-entry into the <b>exact same option contract</b> for 31 days.</p>
+      <p class="small">Different strike, expiry, or option type on the same underlying remains eligible if it passes the setup and liquidity filters. After a trade closes, the agent re-arms for different contracts while preserving the exact-contract block. This is an operational trading guard, not tax advice.</p>
     </section>
 
     <section class="card" style="margin-top:18px">
@@ -189,7 +204,8 @@
         <h2>Active automation</h2>
         <ul>
           <li><b>Daily dynamic weekly option setup refresh:</b> builds top-10 setup list after 10:00 ET.</li>
-          <li><b>Dynamic weekly option setup executor:</b> checks every minute, selects live contract at trigger time, submits only if all gates pass.</li>
+          <li><b>Dynamic weekly option setup executor:</b> checks every minute, selects live contract at trigger time, enters only if all gates pass, and now exits automatically on profit/stop rules.</li>
+          <li><b>15m open position updates:</b> posts concise status only while the market is open.</li>
           <li><b>State directory:</b> <code>/opt/data/trading-agents/dynamic-weekly-options</code></li>
         </ul>
       </div>
